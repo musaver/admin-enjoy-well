@@ -4,7 +4,7 @@
 
 A complete subscription management system has been added to your admin panel with the following components:
 
-### 📦 Files Created/Modified
+#### 📦 Files Created/Modified.
 
 1. **Database Schema** (`lib/schema.ts`) - ✅ Updated
 2. **SQL Migration** (`subscriptions-schema.sql`) - ✅ Created
