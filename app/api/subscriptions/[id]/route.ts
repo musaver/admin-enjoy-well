@@ -77,6 +77,7 @@ export async function PUT(
     if (data.color !== undefined) updateData.color = data.color || null;
     if (data.icon !== undefined) updateData.icon = data.icon || null;
     if (data.badge !== undefined) updateData.badge = data.badge || null;
+    if (data.image !== undefined) updateData.image = data.image || null;
 
     await db
       .update(subscriptions)

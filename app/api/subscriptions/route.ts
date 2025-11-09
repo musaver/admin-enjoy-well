@@ -92,6 +92,7 @@ export async function POST(req: NextRequest) {
       color: data.color || null,
       icon: data.icon || null,
       badge: data.badge || null,
+      image: data.image || null,
     };
     
     await db.insert(subscriptions).values(newSubscription);

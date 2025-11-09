@@ -34,7 +34,7 @@ You can now browse and purchase products.
 Thank you for joining us!
 
 Best regards,
-The Admin Team at Doorgas`;
+The Admin Team`;
 
   return await sendTextEmail(to, subject, text);
 }
@@ -49,7 +49,7 @@ We wanted to update you on your account status. Your account is currently pendin
 If you have any questions or concerns, please don't hesitate to contact our support team.
 
 Best regards,
-The Admin Team at Doorgas`;
+The Admin Team`;
 
   return await sendTextEmail(to, subject, text);
 }

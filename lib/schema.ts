@@ -1194,6 +1194,7 @@ export const subscriptions = mysqlTable("subscriptions", {
   color: varchar("color", { length: 7 }), // Hex color code for UI
   icon: varchar("icon", { length: 100 }), // Icon name for UI
   badge: varchar("badge", { length: 50 }), // Badge text (e.g., "Best Value", "Popular")
+  image: varchar("image", { length: 500 }), // Subscription plan image URL
   
   createdAt: datetime("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: datetime("updated_at").default(sql`CURRENT_TIMESTAMP`),

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeftIcon, PlusIcon, TrashIcon } from 'lucide-react';
 import Link from 'next/link';
+import ImageUploader from '@/app/components/ImageUploader';
 
 export default function AddSubscription() {
   const router = useRouter();
@@ -31,6 +32,7 @@ export default function AddSubscription() {
     color: '#3B82F6',
     icon: '',
     badge: '',
+    image: '',
   });
   const [features, setFeatures] = useState<string[]>(['']);
   const [submitting, setSubmitting] = useState(false);
@@ -219,6 +221,16 @@ export default function AddSubscription() {
                 rows={3}
                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 placeholder="Describe this subscription plan..."
+              />
+            </div>
+
+            <div>
+              <ImageUploader
+                currentImage={formData.image}
+                onImageUpload={(url) => setFormData({ ...formData, image: url })}
+                onImageRemove={() => setFormData({ ...formData, image: '' })}
+                label="Subscription Plan Image"
+                directory="general"
               />
             </div>
           </CardContent>
