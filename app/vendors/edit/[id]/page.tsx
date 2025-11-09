@@ -4,7 +4,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeftIcon, LoaderIcon } from 'lucide-react';
+import { ArrowLeftIcon, LoaderIcon, GripVertical, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import ImageUploader from '../../../components/ImageUploader';
 
@@ -80,6 +80,7 @@ export default function EditVendor() {
   const vendorId = params.id as string;
   
   const [formData, setFormData] = useState<VendorData | null>(null);
+  const [banners, setBanners] = useState<{ id: string; imageUrl: string; sortOrder: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -94,10 +95,27 @@ export default function EditVendor() {
       if (!response.ok) throw new Error('Failed to fetch vendor');
       const data = await response.json();
       setFormData(data);
+      
+      // Fetch banners
+      if (data.id) {
+        fetchBanners(data.id);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBanners = async (profileId: string) => {
+    try {
+      const response = await fetch(`/api/vendor-banners?vendorProfileId=${profileId}`);
+      const result = await response.json();
+      if (result.success && result.data) {
+        setBanners(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching banners:', error);
     }
   };
 
@@ -118,6 +136,82 @@ export default function EditVendor() {
   const handleImageRemove = (field: string) => () => {
     if (!formData) return;
     setFormData({ ...formData, [field]: '' });
+  };
+
+  const handleAddBanner = async (imageUrl: string) => {
+    if (!formData?.id) {
+      alert('Vendor profile ID is required');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/vendor-banners', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vendorProfileId: formData.id,
+          imageUrl,
+          sortOrder: banners.length,
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setBanners([...banners, result.data]);
+        alert('Banner added successfully');
+      }
+    } catch (error) {
+      console.error('Error adding banner:', error);
+      alert('Failed to add banner');
+    }
+  };
+
+  const handleDeleteBanner = async (bannerId: string) => {
+    if (!confirm('Are you sure you want to delete this banner?')) return;
+
+    try {
+      const response = await fetch(`/api/vendor-banners/${bannerId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setBanners(banners.filter(b => b.id !== bannerId));
+        alert('Banner deleted successfully');
+      }
+    } catch (error) {
+      console.error('Error deleting banner:', error);
+      alert('Failed to delete banner');
+    }
+  };
+
+  const handleMoveBanner = async (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= banners.length) return;
+
+    const newBanners = [...banners];
+    [newBanners[index], newBanners[newIndex]] = [newBanners[newIndex], newBanners[index]];
+    
+    // Update sort orders
+    const updatedBanners = newBanners.map((banner, idx) => ({
+      ...banner,
+      sortOrder: idx,
+    }));
+
+    setBanners(updatedBanners);
+
+    // Update on server
+    try {
+      await fetch('/api/vendor-banners/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          banners: updatedBanners.map(b => ({ id: b.id, sortOrder: b.sortOrder })),
+        }),
+      });
+    } catch (error) {
+      console.error('Error reordering banners:', error);
+      alert('Failed to reorder banners');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -631,6 +725,89 @@ export default function EditVendor() {
                 disabled={submitting}
                 directory="vendors"
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Company Banners */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Company Banners</CardTitle>
+            <p className="text-sm text-gray-500 mt-2">
+              Upload multiple banner images for the vendor profile. You can reorder them using the arrow buttons.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Existing Banners */}
+            {banners.length > 0 && (
+              <div className="space-y-3">
+                {banners.map((banner, index) => (
+                  <div
+                    key={banner.id}
+                    className="flex items-center gap-3 p-3 border rounded-lg bg-gray-50"
+                  >
+                    <img
+                      src={banner.imageUrl}
+                      alt={`Banner ${index + 1}`}
+                      className="w-20 h-20 object-cover rounded-md"
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">
+                        Banner {index + 1}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Sort Order: {banner.sortOrder}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveBanner(index, 'up')}
+                        disabled={index === 0 || submitting}
+                        className="p-2 text-gray-600 hover:bg-gray-200 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        title="Move up"
+                      >
+                        <GripVertical className="w-4 h-4 rotate-90" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveBanner(index, 'down')}
+                        disabled={index === banners.length - 1 || submitting}
+                        className="p-2 text-gray-600 hover:bg-gray-200 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        title="Move down"
+                      >
+                        <GripVertical className="w-4 h-4 -rotate-90" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteBanner(banner.id)}
+                        disabled={submitting}
+                        className="p-2 text-red-600 hover:bg-red-100 rounded disabled:opacity-50 transition-colors"
+                        title="Delete banner"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add New Banner */}
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+              <ImageUploader
+                currentImage=""
+                onImageUpload={handleAddBanner}
+                onImageRemove={() => {}}
+                label="Add New Banner"
+                disabled={submitting || !formData?.id}
+                directory="banners"
+              />
+              {!formData?.id && (
+                <p className="text-sm text-amber-600 mt-2">
+                  Please save the vendor profile first before adding banners
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

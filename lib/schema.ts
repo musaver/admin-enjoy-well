@@ -1335,3 +1335,22 @@ export const vendorProfilesRelations = relations(vendorProfiles, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
+// Vendor Banners table - Multiple banners for each vendor
+export const vendorBanners = mysqlTable("vendor_banners", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  vendorProfileId: varchar("vendor_profile_id", { length: 255 }).notNull(),
+  imageUrl: varchar("image_url", { length: 500 }).notNull(),
+  sortOrder: int("sort_order").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: datetime("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+// Vendor Banners Relations
+export const vendorBannersRelations = relations(vendorBanners, ({ one }) => ({
+  vendorProfile: one(vendorProfiles, {
+    fields: [vendorBanners.vendorProfileId],
+    references: [vendorProfiles.id],
+  }),
+}));

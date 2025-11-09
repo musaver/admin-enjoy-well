@@ -601,6 +601,21 @@ export default function AddVendor() {
           </CardContent>
         </Card>
 
+        {/* Company Banners - Note */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Company Banners</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800">
+                📝 <strong>Note:</strong> Company banners can be added after creating the vendor profile. 
+                You'll be able to upload and manage multiple banners with sorting on the edit page.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Description & Social Media */}
         <Card>
           <CardHeader>
