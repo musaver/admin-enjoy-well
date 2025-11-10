@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { user, vendorProfiles } from '@/lib/schema';
 import { v4 as uuidv4 } from 'uuid';
 import { eq } from 'drizzle-orm';
+import { sendVendorActivationEmail } from '@/lib/email';
 
 export async function POST(
   req: NextRequest,
@@ -36,6 +37,15 @@ export async function POST(
           verificationStatus: 'verified'
         })
         .where(eq(vendorProfiles.id, vendorId));
+
+      // Send activation email
+      try {
+        await sendVendorActivationEmail(vendor.companyEmail!, vendor.companyName);
+        console.log('Activation email sent to:', vendor.companyEmail);
+      } catch (emailError) {
+        console.error('Failed to send activation email:', emailError);
+        // Don't fail the activation if email fails
+      }
 
       return NextResponse.json({
         message: 'Vendor activated successfully',
@@ -81,15 +91,17 @@ export async function POST(
       })
       .where(eq(vendorProfiles.id, vendorId));
 
-    // TODO: Send email notification to vendor
-    // You can implement email sending here to notify vendor that their account is active
-    console.log('Vendor activated:', {
-      email: vendor.companyEmail,
-      userId: userId,
-    });
+    // Send activation email to vendor
+    try {
+      await sendVendorActivationEmail(vendor.companyEmail!, vendor.companyName);
+      console.log('Activation email sent successfully to:', vendor.companyEmail);
+    } catch (emailError) {
+      console.error('Failed to send activation email:', emailError);
+      // Don't fail the activation if email fails - vendor is still activated
+    }
 
     return NextResponse.json({
-      message: 'Vendor activated successfully! User account created.',
+      message: 'Vendor activated successfully! User account created and activation email sent.',
       userId,
       email: vendor.companyEmail,
       companyName: vendor.companyName,

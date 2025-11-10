@@ -53,3 +53,44 @@ The Admin Team`;
 
   return await sendTextEmail(to, subject, text);
 }
+
+export async function sendVendorActivationEmail(to: string, companyName: string) {
+  const subject = '🎉 Your Vendor Account is Now Active - Let\'s Enjoy';
+  const text = `Hello ${companyName},
+
+Congratulations! We're excited to inform you that your vendor account has been approved and activated on Let's Enjoy platform.
+
+✅ Your Account Details:
+- Company Name: ${companyName}
+- Email: ${to}
+- Account Status: Active & Verified
+
+🚀 What's Next?
+You can now login to your vendor dashboard using your email address. We use a secure OTP (One-Time Password) system for login - no need to remember passwords!
+
+To login:
+1. Visit: ${process.env.NEXT_PUBLIC_APP_URL || 'https://letsenjoypk.com'}/register
+2. Enter your email address
+3. You'll receive an OTP code via email
+4. Enter the OTP to access your dashboard
+
+📊 Your To Do List:
+- Manage your company profile
+- Upload and manage banners
+- Create and manage coupons
+- View analytics and reports
+- Update business information
+
+💡 Need Help?
+If you have any questions or need assistance getting started, our support team is here to help.
+
+Thank you for partnering with Let's Enjoy! We look forward to a successful collaboration.
+
+Best regards,
+The Let's Enjoy Team
+
+---
+This is an automated message. Please do not reply to this email.`;
+
+  return await sendTextEmail(to, subject, text);
+}
