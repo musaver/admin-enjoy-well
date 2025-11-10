@@ -144,14 +144,31 @@ export async function DELETE(
       return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
     }
 
-    // Delete vendor profile (this will cascade delete if configured)
+    // Store userId before deleting vendor profile
+    const userId = existingVendor.userId;
+
+    // Delete vendor profile first
     await db
       .delete(vendorProfiles)
       .where(eq(vendorProfiles.id, vendorId));
 
+    // If vendor has an associated user account, delete it as well
+    if (userId) {
+      try {
+        await db
+          .delete(user)
+          .where(eq(user.id, userId));
+        console.log('Associated user account deleted:', userId);
+      } catch (userDeleteError) {
+        console.error('Error deleting associated user account:', userDeleteError);
+        // Continue even if user deletion fails - vendor is already deleted
+      }
+    }
+
     return NextResponse.json({ 
-      message: 'Vendor deleted successfully',
-      vendorId 
+      message: 'Vendor and associated user account deleted successfully',
+      vendorId,
+      userId: userId || null
     });
   } catch (error) {
     console.error('Error deleting vendor:', error);
